@@ -11,6 +11,7 @@ import { PlanningReport } from '@/components/dashboard/PlanningReport';
 import { ProjectedInventoryChart } from '@/components/dashboard/ProjectedInventoryChart';
 import { useRealData } from '@/hooks/useRealData';
 import { useAuth } from '@/hooks/useAuth';
+import { useAutoSeed } from '@/hooks/useAutoSeed';
 import { Package, AlertTriangle, Target, TrendingUp, Sparkles, DollarSign, RefreshCw, Play, Zap, ClipboardCheck, Calendar } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -20,6 +21,8 @@ export default function AdminDashboard() {
     activityLog, plannedActions, projections, loading,
     approveRecommendation, rejectRecommendation, runForecast, runRecommendations, evaluateAlerts, executePlan, refresh,
   } = useRealData();
+
+  useAutoSeed(refresh);
 
   const handleRunAll = async () => {
     await runForecast(user?.name);

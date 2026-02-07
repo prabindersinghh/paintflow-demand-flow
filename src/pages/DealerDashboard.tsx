@@ -4,12 +4,15 @@ import { DemandChart } from '@/components/dashboard/DemandChart';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { useRealData } from '@/hooks/useRealData';
 import { useAuth } from '@/hooks/useAuth';
+import { useAutoSeed } from '@/hooks/useAutoSeed';
 import { ShoppingCart, TrendingUp, AlertTriangle, Sparkles, Check, Package, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function DealerDashboard() {
   const { user } = useAuth();
-  const { alerts, recommendations, historicalSales, loading, placeDealerOrder } = useRealData();
+  const { alerts, recommendations, historicalSales, loading, placeDealerOrder, refresh } = useRealData();
+
+  useAutoSeed(refresh);
 
   const dealerRecs = recommendations.filter(r => r.type === 'order' && r.status === 'pending');
   const executedOrders = recommendations.filter(r => r.type === 'order' && r.status === 'executed');

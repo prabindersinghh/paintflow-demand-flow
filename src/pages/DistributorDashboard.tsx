@@ -6,6 +6,7 @@ import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { RecommendationsPanel } from '@/components/dashboard/RecommendationsPanel';
 import { useRealData } from '@/hooks/useRealData';
 import { useAuth } from '@/hooks/useAuth';
+import { useAutoSeed } from '@/hooks/useAutoSeed';
 import { Warehouse, Package, Truck, AlertTriangle, RefreshCw } from 'lucide-react';
 
 export default function DistributorDashboard() {
@@ -14,6 +15,8 @@ export default function DistributorDashboard() {
     inventory, alerts, recommendations, historicalSales, stats, loading,
     approveRecommendation, rejectRecommendation, refresh,
   } = useRealData();
+
+  useAutoSeed(refresh);
 
   const transferRecs = recommendations.filter(r => r.type === 'transfer' || r.type === 'reorder');
 
