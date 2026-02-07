@@ -1,7 +1,7 @@
 import { useState, createContext, useContext, type ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
-import type { UserRole } from '@/lib/mock-data';
+import type { UserRole } from '@/lib/types';
 
 interface DashboardContextType {
   role: UserRole;
