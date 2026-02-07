@@ -10,13 +10,16 @@ import { ActivityTimeline } from '@/components/dashboard/ActivityTimeline';
 import { PlanningReport } from '@/components/dashboard/PlanningReport';
 import { ProjectedInventoryChart } from '@/components/dashboard/ProjectedInventoryChart';
 import { useRealData } from '@/hooks/useRealData';
+import { useAutoSeed } from '@/hooks/useAutoSeed';
 import { Eye, Package, AlertTriangle, Target, TrendingUp, Sparkles, RefreshCw } from 'lucide-react';
 
 export default function ViewerDashboard() {
   const {
     products, inventory, alerts, recommendations, historicalSales, regionalDemand, skuVelocity, stats,
-    activityLog, plannedActions, projections, loading,
+    activityLog, plannedActions, projections, loading, refresh,
   } = useRealData();
+
+  useAutoSeed(refresh);
 
   if (loading) {
     return (
