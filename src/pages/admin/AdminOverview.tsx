@@ -132,11 +132,7 @@ export default function AdminOverview() {
 
       {/* AI Planning Report + Recommendations */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <RecommendationsPanel
-          recommendations={recommendations}
-          onApprove={(id) => approveRecommendation(id, user?.name)}
-          onReject={(id) => rejectRecommendation(id, user?.name)}
-        />
+        <RecommendationsPanel recommendations={recommendations} />
         <PlanningReport projections={projections} plannedActions={plannedActions} products={products} />
       </div>
 
