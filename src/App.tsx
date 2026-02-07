@@ -4,6 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
+import AdminDashboard from "./pages/AdminDashboard";
+import DistributorDashboard from "./pages/DistributorDashboard";
+import DealerDashboard from "./pages/DealerDashboard";
+import ViewerDashboard from "./pages/ViewerDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -16,7 +21,15 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/distributor" element={<DistributorDashboard />} />
+          <Route path="/distributor/*" element={<DistributorDashboard />} />
+          <Route path="/dealer" element={<DealerDashboard />} />
+          <Route path="/dealer/*" element={<DealerDashboard />} />
+          <Route path="/viewer" element={<ViewerDashboard />} />
+          <Route path="/viewer/*" element={<ViewerDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
