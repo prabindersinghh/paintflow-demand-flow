@@ -1,4 +1,5 @@
 import type { InventoryItem, Product } from '@/lib/types';
+import { formatPackagingShort, toLitres } from '@/lib/packaging';
 
 interface InventoryTableProps {
   inventory: InventoryItem[];
@@ -44,19 +45,26 @@ export function InventoryTable({ inventory, warehouseFilter, compact }: Inventor
             <tr className="border-b border-border bg-muted/50">
               <th className="px-4 py-2.5 text-left font-semibold text-muted-foreground uppercase tracking-wider">SKU</th>
               <th className="px-4 py-2.5 text-left font-semibold text-muted-foreground uppercase tracking-wider">Product</th>
-              <th className="px-4 py-2.5 text-left font-semibold text-muted-foreground uppercase tracking-wider">Category</th>
-              <th className="px-4 py-2.5 text-right font-semibold text-muted-foreground uppercase tracking-wider">Stock</th>
+              <th className="px-4 py-2.5 text-left font-semibold text-muted-foreground uppercase tracking-wider">Pack</th>
+              <th className="px-4 py-2.5 text-right font-semibold text-muted-foreground uppercase tracking-wider">Stock (Litres)</th>
+              <th className="px-4 py-2.5 text-right font-semibold text-muted-foreground uppercase tracking-wider">Cans</th>
               <th className="px-4 py-2.5 text-right font-semibold text-muted-foreground uppercase tracking-wider">Min</th>
               <th className="px-4 py-2.5 text-center font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
             </tr>
           </thead>
           <tbody>
-            {displayItems.map(({ product, totalQty, isLow, isDead }) => (
+            {displayItems.map(({ product, totalQty, isLow, isDead }) => {
+              const litres = toLitres(totalQty, product);
+              const packSize = product.pack_size_litres || 1;
+              return (
               <tr key={product.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                 <td className="px-4 py-2.5 font-mono text-muted-foreground">{product.sku}</td>
                 <td className="px-4 py-2.5 font-medium text-card-foreground">{product.name}</td>
-                <td className="px-4 py-2.5 text-muted-foreground">{product.category}</td>
+                <td className="px-4 py-2.5 text-muted-foreground">{packSize}L</td>
                 <td className={`px-4 py-2.5 text-right font-semibold ${isLow ? 'text-destructive' : 'text-card-foreground'}`}>
+                  {litres.toLocaleString()}L
+                </td>
+                <td className="px-4 py-2.5 text-right text-muted-foreground">
                   {totalQty.toLocaleString()}
                 </td>
                 <td className="px-4 py-2.5 text-right text-muted-foreground">{product.min_stock}</td>
@@ -76,7 +84,8 @@ export function InventoryTable({ inventory, warehouseFilter, compact }: Inventor
                   )}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

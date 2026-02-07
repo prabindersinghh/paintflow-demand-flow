@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Product, InventoryItem, Forecast, Alert, Recommendation, ActivityLogEntry, PlannedAction, InventoryProjection } from '@/lib/types';
+import { totalLitres, totalValue } from '@/lib/packaging';
 import { toast } from 'sonner';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -64,13 +65,10 @@ export function useRealData() {
     fetchAll();
   }, [fetchAll]);
 
-  // Stats
+  // Stats — all quantities expressed in litres
   const stats = {
-    totalUnits: inventory.reduce((sum, i) => sum + i.quantity, 0),
-    totalValue: inventory.reduce((sum, i) => {
-      const prod = i.products || products.find(p => p.id === i.product_id);
-      return sum + (prod ? i.quantity * prod.unit_price : 0);
-    }, 0),
+    totalLitres: totalLitres(inventory, products),
+    totalValue: totalValue(inventory, products),
     totalSKUs: products.length,
     lowStockCount: inventory.filter(i => {
       const prod = i.products || products.find(p => p.id === i.product_id);
