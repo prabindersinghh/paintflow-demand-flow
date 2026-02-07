@@ -1,25 +1,32 @@
-import { PRODUCTS, type InventoryItem, type Warehouse } from '@/lib/mock-data';
+import type { InventoryItem, Product } from '@/lib/types';
 
 interface InventoryTableProps {
   inventory: InventoryItem[];
-  warehouses?: Warehouse[];
   warehouseFilter?: string;
   compact?: boolean;
 }
 
 export function InventoryTable({ inventory, warehouseFilter, compact }: InventoryTableProps) {
   const filtered = warehouseFilter
-    ? inventory.filter(i => i.warehouseId === warehouseFilter)
+    ? inventory.filter(i => i.warehouse_id === warehouseFilter)
     : inventory;
 
-  // Group by product and show total or per-warehouse
-  const grouped = PRODUCTS.map(product => {
-    const items = filtered.filter(i => i.productId === product.id);
-    const totalQty = items.reduce((sum, i) => sum + i.quantity, 0);
-    const isLow = totalQty < product.minStock;
-    const isDead = totalQty > product.minStock * 4;
+  // Group by product
+  const productMap: Record<string, { product: Product; totalQty: number; isLow: boolean; isDead: boolean }> = {};
+  
+  for (const item of filtered) {
+    const prod = item.products;
+    if (!prod) continue;
+    if (!productMap[prod.id]) {
+      productMap[prod.id] = { product: prod, totalQty: 0, isLow: false, isDead: false };
+    }
+    productMap[prod.id].totalQty += item.quantity;
+  }
 
-    return { product, totalQty, isLow, isDead };
+  const grouped = Object.values(productMap).map(entry => {
+    entry.isLow = entry.totalQty < entry.product.min_stock;
+    entry.isDead = entry.totalQty > entry.product.min_stock * 4;
+    return entry;
   }).sort((a, b) => a.totalQty - b.totalQty);
 
   const displayItems = compact ? grouped.slice(0, 10) : grouped;
@@ -52,7 +59,7 @@ export function InventoryTable({ inventory, warehouseFilter, compact }: Inventor
                 <td className={`px-4 py-2.5 text-right font-semibold ${isLow ? 'text-destructive' : 'text-card-foreground'}`}>
                   {totalQty.toLocaleString()}
                 </td>
-                <td className="px-4 py-2.5 text-right text-muted-foreground">{product.minStock}</td>
+                <td className="px-4 py-2.5 text-right text-muted-foreground">{product.min_stock}</td>
                 <td className="px-4 py-2.5 text-center">
                   {isLow ? (
                     <span className="inline-flex items-center rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive">

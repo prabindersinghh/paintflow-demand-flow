@@ -1,12 +1,12 @@
 import { AlertTriangle, AlertCircle, Info, Clock } from 'lucide-react';
-import type { Alert } from '@/lib/mock-data';
+import type { Alert } from '@/lib/types';
 
 interface AlertsPanelProps {
   alerts: Alert[];
   compact?: boolean;
 }
 
-const ALERT_CONFIG = {
+const ALERT_CONFIG: Record<string, { icon: typeof AlertTriangle; bg: string; text: string; border: string }> = {
   critical: { icon: AlertTriangle, bg: 'bg-destructive/10', text: 'text-destructive', border: 'border-destructive/20' },
   warning: { icon: AlertCircle, bg: 'bg-warning/10', text: 'text-warning', border: 'border-warning/20' },
   info: { icon: Info, bg: 'bg-info/10', text: 'text-info', border: 'border-info/20' },
@@ -24,8 +24,10 @@ export function AlertsPanel({ alerts, compact }: AlertsPanelProps) {
         </span>
       </div>
       <div className="divide-y divide-border/50">
-        {displayAlerts.map(alert => {
-          const config = ALERT_CONFIG[alert.severity];
+        {displayAlerts.length === 0 ? (
+          <div className="px-5 py-8 text-center text-xs text-muted-foreground">No active alerts.</div>
+        ) : displayAlerts.map(alert => {
+          const config = ALERT_CONFIG[alert.severity] || ALERT_CONFIG.info;
           const Icon = config.icon;
           return (
             <div key={alert.id} className={`flex gap-3 px-5 py-3 ${config.bg}/30 hover:${config.bg} transition-colors`}>
@@ -35,18 +37,20 @@ export function AlertsPanel({ alerts, compact }: AlertsPanelProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-xs font-semibold text-card-foreground">{alert.title}</p>
-                  <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">
-                    {alert.region}
-                  </span>
+                  {alert.region && (
+                    <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">
+                      {alert.region}
+                    </span>
+                  )}
                 </div>
-                {!compact && (
+                {!compact && alert.description && (
                   <p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed">
                     {alert.description}
                   </p>
                 )}
                 <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground">
                   <Clock className="h-2.5 w-2.5" />
-                  {alert.timestamp.toLocaleString()}
+                  {new Date(alert.created_at).toLocaleString()}
                 </div>
               </div>
             </div>

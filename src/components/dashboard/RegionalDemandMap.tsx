@@ -1,11 +1,11 @@
-import type { Region } from '@/lib/mock-data';
+import type { Region } from '@/lib/types';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface RegionalDemandProps {
-  data: { region: Region; demand: number; growth: number }[];
+  data: { region: string; demand: number; growth: number }[];
 }
 
-const REGION_COLORS: Record<Region, string> = {
+const REGION_COLORS: Record<string, string> = {
   North: 'bg-chart-1',
   South: 'bg-chart-2',
   East: 'bg-chart-3',
@@ -14,7 +14,7 @@ const REGION_COLORS: Record<Region, string> = {
 };
 
 export function RegionalDemandMap({ data }: RegionalDemandProps) {
-  const maxDemand = Math.max(...data.map(d => d.demand));
+  const maxDemand = Math.max(...data.map(d => d.demand), 1);
 
   return (
     <div className="rounded-lg border border-border bg-card p-5">
@@ -25,7 +25,7 @@ export function RegionalDemandMap({ data }: RegionalDemandProps) {
             <div className="w-16 text-xs font-medium text-muted-foreground">{region}</div>
             <div className="flex-1 h-8 rounded-md bg-muted overflow-hidden relative">
               <div
-                className={`h-full ${REGION_COLORS[region]} opacity-80 rounded-md transition-all duration-700`}
+                className={`h-full ${REGION_COLORS[region] || 'bg-chart-1'} opacity-80 rounded-md transition-all duration-700`}
                 style={{ width: `${(demand / maxDemand) * 100}%` }}
               />
               <span className="absolute inset-0 flex items-center px-3 text-[11px] font-semibold text-card-foreground">
