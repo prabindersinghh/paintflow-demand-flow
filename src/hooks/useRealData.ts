@@ -215,19 +215,35 @@ export function useRealData() {
     return result;
   }, [fetchAll, fetchStats, fetchHistoricalChart]);
 
+  const runSimulation = useCallback(async (userName?: string) => {
+    const result = await callEdgeFunction('run-simulation', { user_name: userName || 'Admin' });
+    if (result.success) {
+      await fetchAll();
+      await fetchStats();
+    }
+    return result;
+  }, [fetchAll, fetchStats]);
+
   const runRecommendations = useCallback(async (userName?: string) => {
     toast.loading('Generating plan & projections...');
     const result = await callEdgeFunction('run-recommendations', { user_name: userName || 'Admin' });
     toast.dismiss();
     if (result.success) {
       toast.success(`Generated ${result.recommendations_generated} planned actions & ${result.projections_generated} projections`);
+      // Chain simulation to populate virtual layer
+      toast.loading('Running inventory simulation...');
+      const simResult = await runSimulation(userName);
+      toast.dismiss();
+      if (simResult.success) {
+        toast.success(`Simulation complete: ${simResult.projections} projections, ${simResult.movements} movements`);
+      }
       await fetchAll();
       await fetchStats();
     } else {
       toast.error(result.error || 'Planning engine failed');
     }
     return result;
-  }, [fetchAll, fetchStats]);
+  }, [fetchAll, fetchStats, runSimulation]);
 
   const evaluateAlerts = useCallback(async () => {
     const result = await callEdgeFunction('evaluate-alerts');
@@ -306,6 +322,7 @@ export function useRealData() {
     // Actions
     runForecast,
     runRecommendations,
+    runSimulation,
     evaluateAlerts,
     approveRecommendation,
     rejectRecommendation,

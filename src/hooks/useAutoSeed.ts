@@ -8,7 +8,7 @@ const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 /**
  * Auto-seeds the database with demo data if it detects
  * the planned_actions table is empty (indicates fresh or unseeded state).
- * Chains: seed → forecast → recommendations → alerts.
+ * Chains: seed → forecast → recommendations → alerts → simulation.
  */
 export function useAutoSeed(onComplete?: () => void) {
   const seeding = useRef(false);
@@ -26,7 +26,28 @@ export function useAutoSeed(onComplete?: () => void) {
         ]);
 
         if ((planCount ?? 0) > 0 || (moveCount ?? 0) > 0) {
-          return; // Already seeded
+          // Already seeded — but check if simulation layer is populated
+          const { count: simCount } = await supabase
+            .from('virtual_inventory_projection')
+            .select('*', { count: 'exact', head: true });
+
+          if ((simCount ?? 0) === 0) {
+            // Auto-run simulation to populate virtual dashboard layer
+            try {
+              await fetch(`${SUPABASE_URL}/functions/v1/run-simulation`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${SUPABASE_KEY}`,
+                },
+                body: JSON.stringify({ user_name: 'System (auto-sim)' }),
+              });
+              onComplete?.();
+            } catch (e) {
+              console.warn('Auto-simulation failed:', e);
+            }
+          }
+          return;
         }
 
         // Also check if we have products (master data must exist)
@@ -57,6 +78,19 @@ export function useAutoSeed(onComplete?: () => void) {
           toast.success(`Demo initialized: ${result.seeded.historical_sales} sales records, forecasts & plans generated`, {
             duration: 5000,
           });
+          // Auto-run simulation to populate virtual dashboard layer
+          try {
+            await fetch(`${SUPABASE_URL}/functions/v1/run-simulation`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+              },
+              body: JSON.stringify({ user_name: 'System (auto-seed)' }),
+            });
+          } catch (e) {
+            console.warn('Auto-simulation after seed failed:', e);
+          }
           onComplete?.();
         } else {
           toast.error(`Seed failed: ${result.error}`);
