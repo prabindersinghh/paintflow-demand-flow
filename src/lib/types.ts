@@ -85,3 +85,36 @@ export interface ActivityLogEntry {
   details: Record<string, any>;
   created_at: string;
 }
+
+export interface PlannedAction {
+  id: string;
+  recommendation_id: string | null;
+  action_type: string;
+  product_id: string | null;
+  from_location: string | null;
+  to_location: string;
+  quantity: number;
+  planned_execution_date: string | null;
+  status: string;
+  approved_by: string | null;
+  approved_at: string | null;
+  executed_at: string | null;
+  created_at: string;
+  products?: Product;
+}
+
+export interface InventoryProjection {
+  id: string;
+  product_id: string;
+  warehouse_id: string;
+  projected_date: string;
+  current_quantity: number;
+  planned_inbound: number;
+  planned_outbound: number;
+  forecasted_demand: number;
+  projected_quantity: number;
+  based_on_plan: boolean;
+  created_at: string;
+  products?: Product;
+  warehouses?: { id: string; name: string; region: string };
+}

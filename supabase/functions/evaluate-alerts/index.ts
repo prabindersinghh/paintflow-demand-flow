@@ -20,11 +20,9 @@ Deno.serve(async (req) => {
 
     const { data: products } = await supabase.from('products').select('id, name, sku, min_stock')
     const { data: inventory } = await supabase.from('inventory').select('*, warehouses(name, region)')
-    const { data: warehouses } = await supabase.from('warehouses').select('id, name, region')
 
     if (!products || !inventory) throw new Error('Missing data')
 
-    // Get recent sales trends (last 7 vs previous 7 days)
     const today = new Date()
     const sevenAgo = new Date(today); sevenAgo.setDate(sevenAgo.getDate() - 7)
     const fourteenAgo = new Date(today); fourteenAgo.setDate(fourteenAgo.getDate() - 14)
@@ -34,7 +32,6 @@ Deno.serve(async (req) => {
       .select('product_id, region, quantity, sale_date')
       .gte('sale_date', fourteenAgo.toISOString().split('T')[0])
 
-    // Calculate demand spikes
     const demandByProductRegion: Record<string, { recent: number; previous: number }> = {}
     if (recentSales) {
       for (const sale of recentSales) {
@@ -49,7 +46,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Clear old alerts (keep last 50)
     const { data: existingAlerts } = await supabase
       .from('alerts')
       .select('id')
@@ -60,13 +56,12 @@ Deno.serve(async (req) => {
       await supabase.from('alerts').delete().in('id', existingAlerts.map(a => a.id))
     }
 
-    const newAlerts: any[] = []
+    const newAlerts: Record<string, unknown>[] = []
 
-    // Check for stockout risks
     for (const item of inventory) {
       const product = products.find(p => p.id === item.product_id)
       if (!product) continue
-      const wh = (item as any).warehouses
+      const wh = (item as Record<string, unknown>).warehouses as Record<string, string> | null
 
       if (item.quantity < product.min_stock * 0.3) {
         newAlerts.push({
@@ -88,7 +83,6 @@ Deno.serve(async (req) => {
         })
       }
 
-      // Overstock detection
       if (item.quantity > product.min_stock * 5) {
         newAlerts.push({
           type: 'overstock',
@@ -101,7 +95,30 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Demand spike detection
+    // Also check projected inventory for FUTURE risks
+    const { data: projections } = await supabase
+      .from('inventory_projection')
+      .select('*, products:product_id(name, sku, min_stock), warehouses:warehouse_id(name, region)')
+    
+    if (projections) {
+      for (const proj of projections) {
+        const prod = (proj as Record<string, unknown>).products as Record<string, unknown> | null
+        const wh = (proj as Record<string, unknown>).warehouses as Record<string, string> | null
+        if (!prod) continue
+
+        if (proj.projected_quantity < (prod.min_stock as number) * 0.3) {
+          newAlerts.push({
+            type: 'projected_stockout',
+            severity: 'warning',
+            title: `Projected Stockout: ${prod.name} by ${proj.projected_date}`,
+            description: `Projected to ${proj.projected_quantity} units at ${wh?.name || 'warehouse'} by ${proj.projected_date}. Plan actions to prevent.`,
+            region: wh?.region || 'Central',
+            sku: prod.sku as string,
+          })
+        }
+      }
+    }
+
     for (const [key, data] of Object.entries(demandByProductRegion)) {
       const [productId, region] = key.split('_')
       const product = products.find(p => p.id === productId)
@@ -120,19 +137,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Seasonal alert
     const month = today.getMonth()
     if (month >= 8 && month <= 10) {
       newAlerts.push({
         type: 'seasonal',
         severity: 'info',
         title: 'Festival Season Active',
-        description: 'Diwali/festival season driving higher interior paint demand across all regions. Ensure adequate stock.',
+        description: 'Diwali/festival season driving higher interior paint demand across all regions.',
         region: 'Central',
       })
     }
 
-    // Insert new alerts (limit to prevent spam)
     if (newAlerts.length > 0) {
       const { error } = await supabase.from('alerts').insert(newAlerts.slice(0, 25))
       if (error) throw error
@@ -149,8 +164,9 @@ Deno.serve(async (req) => {
       success: true,
       alerts_generated: Math.min(newAlerts.length, 25),
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

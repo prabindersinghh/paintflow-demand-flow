@@ -30,11 +30,16 @@ export function RecommendationsPanel({ recommendations, onApprove, onReject, rea
       <div className="flex items-center justify-between border-b border-border px-5 py-3">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-accent" />
-          <h3 className="text-sm font-semibold text-card-foreground">AI Recommendations</h3>
+          <h3 className="text-sm font-semibold text-card-foreground">Planned Actions</h3>
         </div>
-        <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-[10px] font-semibold text-accent">
-          {recommendations.filter(r => r.status === 'pending').length} Pending
-        </span>
+        <div className="flex gap-1.5">
+          <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-semibold text-warning">
+            {recommendations.filter(r => r.status === 'pending').length} Pending
+          </span>
+          <span className="rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-semibold text-success">
+            {recommendations.filter(r => r.status === 'approved').length} Approved
+          </span>
+        </div>
       </div>
       <div className="divide-y divide-border/50 max-h-[500px] overflow-y-auto">
         {display.length === 0 ? (
