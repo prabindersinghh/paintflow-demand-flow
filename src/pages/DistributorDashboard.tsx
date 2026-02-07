@@ -40,10 +40,10 @@ export default function DistributorDashboard() {
           icon={<Warehouse className="h-4 w-4 text-muted-foreground" />}
         />
         <StatsCard
-          title="Low Stock Items"
-          value={stats.lowStockCount}
+          title="Stockout Risk"
+          value={`${stats.stockoutRiskScore}%`}
           icon={<Package className="h-4 w-4 text-muted-foreground" />}
-          variant={stats.lowStockCount > 5 ? 'warning' : 'default'}
+          variant={stats.stockoutRiskScore > 20 ? 'warning' : 'default'}
         />
         <StatsCard
           title="Pending Transfers"

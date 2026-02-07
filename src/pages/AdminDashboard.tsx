@@ -120,9 +120,9 @@ export default function AdminDashboard() {
         />
         <StatsCard
           title="Projected Risks"
-          value={stats.projectedStockouts}
+          value={stats.projectedRisks}
           icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
-          variant={stats.projectedStockouts > 5 ? 'destructive' : 'default'}
+          variant={stats.projectedRisks > 5 ? 'destructive' : 'default'}
         />
       </div>
 

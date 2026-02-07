@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Product, InventoryItem, Forecast, Alert, Recommendation, ActivityLogEntry, PlannedAction, InventoryProjection } from '@/lib/types';
-import { totalLitres, totalValue } from '@/lib/packaging';
 import { toast } from 'sonner';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -61,29 +60,38 @@ export function useRealData() {
     setLoading(false);
   }, []);
 
+  // Stats — fetched directly from database via RPC
+  const [stats, setStats] = useState({
+    totalLitres: 0,
+    totalValue: 0,
+    totalSKUs: 0,
+    stockoutRiskScore: 0,
+    activeAlerts: 0,
+    pendingPlans: 0,
+    approvedPlans: 0,
+    projectedRisks: 0,
+  });
+
+  const fetchStats = useCallback(async () => {
+    const { data, error } = await supabase.rpc('get_dashboard_stats');
+    if (error || !data) return;
+    const d = data as Record<string, number>;
+    setStats({
+      totalLitres: d.total_litres ?? 0,
+      totalValue: d.total_value ?? 0,
+      totalSKUs: d.total_skus ?? 0,
+      stockoutRiskScore: d.stockout_risk_score ?? 0,
+      activeAlerts: d.active_alerts ?? 0,
+      pendingPlans: d.pending_plans ?? 0,
+      approvedPlans: d.approved_plans ?? 0,
+      projectedRisks: d.projected_risks ?? 0,
+    });
+  }, []);
+
   useEffect(() => {
     fetchAll();
-  }, [fetchAll]);
-
-  // Stats — all quantities expressed in litres
-  const stats = {
-    totalLitres: totalLitres(inventory, products),
-    totalValue: totalValue(inventory, products),
-    totalSKUs: products.length,
-    lowStockCount: inventory.filter(i => {
-      const prod = i.products || products.find(p => p.id === i.product_id);
-      return prod && i.quantity < prod.min_stock;
-    }).length,
-    stockoutRiskScore: 0,
-    forecastAccuracy: 89,
-    activeAlerts: alerts.length,
-    pendingPlans: plannedActions.filter(p => p.status === 'pending').length,
-    approvedPlans: plannedActions.filter(p => p.status === 'approved').length,
-    projectedStockouts: projections.filter(p => p.projected_quantity < 0 || (p.products && p.projected_quantity < p.products.min_stock * 0.3)).length,
-  };
-  stats.stockoutRiskScore = inventory.length > 0
-    ? Math.round((stats.lowStockCount / inventory.length) * 100)
-    : 0;
+    fetchStats();
+  }, [fetchAll, fetchStats]);
 
   // Historical chart data
   const [historicalSales, setHistoricalSales] = useState<{ date: string; actual: number; predicted: number }[]>([]);
@@ -199,12 +207,13 @@ export function useRealData() {
     if (result.success) {
       toast.success(`Generated ${result.forecasts_generated} forecasts`);
       await fetchAll();
+      await fetchStats();
       await fetchHistoricalChart();
     } else {
       toast.error(result.error || 'Forecast failed');
     }
     return result;
-  }, [fetchAll, fetchHistoricalChart]);
+  }, [fetchAll, fetchStats, fetchHistoricalChart]);
 
   const runRecommendations = useCallback(async (userName?: string) => {
     toast.loading('Generating plan & projections...');
@@ -213,19 +222,21 @@ export function useRealData() {
     if (result.success) {
       toast.success(`Generated ${result.recommendations_generated} planned actions & ${result.projections_generated} projections`);
       await fetchAll();
+      await fetchStats();
     } else {
       toast.error(result.error || 'Planning engine failed');
     }
     return result;
-  }, [fetchAll]);
+  }, [fetchAll, fetchStats]);
 
   const evaluateAlerts = useCallback(async () => {
     const result = await callEdgeFunction('evaluate-alerts');
     if (result.success) {
       await fetchAll();
+      await fetchStats();
     }
     return result;
-  }, [fetchAll]);
+  }, [fetchAll, fetchStats]);
 
   const approveRecommendation = useCallback(async (recId: string, userName?: string) => {
     const result = await callEdgeFunction('approve-action', {
@@ -236,11 +247,12 @@ export function useRealData() {
     if (result.success) {
       toast.success('Plan approved — awaiting execution');
       await fetchAll();
+      await fetchStats();
     } else {
       toast.error(result.error || 'Approval failed');
     }
     return result;
-  }, [fetchAll]);
+  }, [fetchAll, fetchStats]);
 
   const rejectRecommendation = useCallback(async (recId: string, userName?: string) => {
     const result = await callEdgeFunction('approve-action', {
@@ -251,11 +263,12 @@ export function useRealData() {
     if (result.success) {
       toast.success('Recommendation rejected');
       await fetchAll();
+      await fetchStats();
     } else {
       toast.error(result.error || 'Rejection failed');
     }
     return result;
-  }, [fetchAll]);
+  }, [fetchAll, fetchStats]);
 
   const executePlan = useCallback(async (userName?: string) => {
     toast.loading('Executing approved plans...');
@@ -264,11 +277,12 @@ export function useRealData() {
     if (result.success) {
       toast.success(result.message || `Executed ${result.executed} actions`);
       await fetchAll();
+      await fetchStats();
     } else {
       toast.error(result.error || 'Plan execution failed');
     }
     return result;
-  }, [fetchAll]);
+  }, [fetchAll, fetchStats]);
 
   const placeDealerOrder = useCallback(async (recId: string, userName?: string) => {
     return approveRecommendation(recId, userName);
@@ -297,6 +311,6 @@ export function useRealData() {
     rejectRecommendation,
     executePlan,
     placeDealerOrder,
-    refresh: fetchAll,
+    refresh: async () => { await fetchAll(); await fetchStats(); },
   };
 }
