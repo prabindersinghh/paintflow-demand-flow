@@ -43,7 +43,7 @@ export function useRealData() {
       supabase.from('products').select('*').order('sku'),
       supabase.from('inventory').select('*, products(*), warehouses(id, name, region)'),
       supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(20),
-      supabase.from('recommendations').select('*, products(*)').order('created_at', { ascending: false }),
+      supabase.from('recommendations').select('*, products(*)').order('priority', { ascending: true }).order('created_at', { ascending: false }),
       supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(50),
       supabase.from('planned_actions').select('*, products:product_id(*)').order('created_at', { ascending: false }),
       supabase.from('inventory_projection').select('*, products:product_id(*), warehouses:warehouse_id(id, name, region)').order('projected_date'),
