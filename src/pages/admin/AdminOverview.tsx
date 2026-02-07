@@ -10,7 +10,8 @@ import { PlanningReport } from '@/components/dashboard/PlanningReport';
 import { ProjectedInventoryChart } from '@/components/dashboard/ProjectedInventoryChart';
 import { useRealData } from '@/hooks/useRealData';
 import { useAuth } from '@/hooks/useAuth';
-import { Package, AlertTriangle, Target, TrendingUp, Sparkles, DollarSign, RefreshCw, Play, Zap, ClipboardCheck, Calendar } from 'lucide-react';
+import { generatePlanReportPDF } from '@/lib/generatePlanReport';
+import { Package, AlertTriangle, Target, TrendingUp, Sparkles, DollarSign, RefreshCw, Play, Zap, ClipboardCheck, Calendar, FileDown } from 'lucide-react';
 
 export default function AdminOverview() {
   const { user } = useAuth();
@@ -45,6 +46,13 @@ export default function AdminOverview() {
         >
           <Play className="h-4 w-4" />
           Generate Plan
+        </button>
+        <button
+          onClick={() => generatePlanReportPDF({ projections, plannedActions, products, inventory, regionalDemand, stats })}
+          className="flex items-center gap-2 rounded-lg border border-accent/30 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent hover:bg-accent/20 transition-colors"
+        >
+          <FileDown className="h-4 w-4" />
+          Download AI Plan Report (PDF)
         </button>
         <button
           onClick={handleExecutePlan}
