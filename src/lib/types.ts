@@ -14,6 +14,7 @@ export interface Product {
   color: string | null;
   unit_price: number;
   min_stock: number;
+  pack_size_litres: number;
 }
 
 export interface InventoryItem {

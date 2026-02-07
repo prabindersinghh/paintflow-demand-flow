@@ -1,5 +1,6 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import type { InventoryProjection, InventoryItem, Product } from '@/lib/types';
+import { toLitres } from '@/lib/packaging';
 
 interface ProjectedInventoryChartProps {
   inventory: InventoryItem[];
@@ -9,16 +10,16 @@ interface ProjectedInventoryChartProps {
 
 export function ProjectedInventoryChart({ inventory, projections, products }: ProjectedInventoryChartProps) {
   // Aggregate by product: current stock, 7-day projected, 30-day projected
-  const productMap = new Map<string, { name: string; current: number; day7: number; day30: number; min: number }>();
+  const productMap = new Map<string, { name: string; current: number; day7: number; day30: number; min: number; packSize: number }>();
 
   for (const p of products.slice(0, 10)) {
-    productMap.set(p.id, { name: p.name.length > 18 ? p.name.slice(0, 16) + '…' : p.name, current: 0, day7: 0, day30: 0, min: p.min_stock });
+    productMap.set(p.id, { name: p.name.length > 18 ? p.name.slice(0, 16) + '…' : p.name, current: 0, day7: 0, day30: 0, min: p.min_stock, packSize: p.pack_size_litres || 1 });
   }
 
   // Sum current inventory per product
   for (const item of inventory) {
     const entry = productMap.get(item.product_id);
-    if (entry) entry.current += item.quantity;
+    if (entry) entry.current += item.quantity * entry.packSize;
   }
 
   // Sum projections per product per date
@@ -28,24 +29,24 @@ export function ProjectedInventoryChart({ inventory, projections, products }: Pr
     // Determine if 7-day or 30-day based on date proximity
     const daysOut = Math.round((new Date(proj.projected_date).getTime() - Date.now()) / 86400000);
     if (daysOut <= 10) {
-      entry.day7 += proj.projected_quantity;
+      entry.day7 += proj.projected_quantity * entry.packSize;
     } else {
-      entry.day30 += proj.projected_quantity;
+      entry.day30 += proj.projected_quantity * entry.packSize;
     }
   }
 
   const chartData = Array.from(productMap.values()).map(v => ({
     name: v.name,
-    'Current Stock': v.current,
-    '7-Day Projected': v.day7,
-    '30-Day Projected': v.day30,
-    'Min Stock': v.min,
+    'Current (L)': v.current,
+    '7-Day (L)': v.day7,
+    '30-Day (L)': v.day30,
+    'Min Stock': v.min * v.packSize,
   }));
 
   return (
     <div className="rounded-lg border border-border bg-card p-5">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-card-foreground">Projected Inventory</h3>
+        <h3 className="text-sm font-semibold text-card-foreground">Projected Inventory (Litres)</h3>
         <div className="flex gap-2">
           <span className="rounded-full bg-chart-2/10 px-2 py-0.5 text-[10px] font-semibold text-chart-2">Current</span>
           <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent">7-Day</span>
@@ -66,9 +67,9 @@ export function ProjectedInventoryChart({ inventory, projections, products }: Pr
             }}
           />
           <Legend wrapperStyle={{ fontSize: '10px' }} />
-          <Bar dataKey="Current Stock" fill="hsl(215, 55%, 35%)" radius={[2, 2, 0, 0]} />
-          <Bar dataKey="7-Day Projected" fill="hsl(174, 62%, 38%)" radius={[2, 2, 0, 0]} />
-          <Bar dataKey="30-Day Projected" fill="hsl(280, 55%, 55%)" radius={[2, 2, 0, 0]} />
+          <Bar dataKey="Current (L)" fill="hsl(215, 55%, 35%)" radius={[2, 2, 0, 0]} />
+          <Bar dataKey="7-Day (L)" fill="hsl(174, 62%, 38%)" radius={[2, 2, 0, 0]} />
+          <Bar dataKey="30-Day (L)" fill="hsl(280, 55%, 55%)" radius={[2, 2, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

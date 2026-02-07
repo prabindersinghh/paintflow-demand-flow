@@ -86,7 +86,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-6">
         <StatsCard
           title="Current Inventory"
-          value={stats.totalUnits.toLocaleString()}
+          value={`${(stats.totalLitres / 1000).toFixed(1)}K L`}
           icon={<Package className="h-4 w-4 text-muted-foreground" />}
         />
         <StatsCard

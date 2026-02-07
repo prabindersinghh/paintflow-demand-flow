@@ -23,11 +23,14 @@ export function PlanningReport({ projections, plannedActions }: PlanningReportPr
       icon: AlertTriangle,
       color: 'text-destructive',
       bg: 'bg-destructive/10',
-      items: stockoutRisks.slice(0, 6).map(p => ({
-        label: p.products?.name || 'Unknown',
-        detail: `${p.projected_quantity} units by ${new Date(p.projected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at ${p.warehouses?.name || 'warehouse'}`,
-        severity: p.projected_quantity <= 0 ? 'critical' : 'warning',
-      })),
+      items: stockoutRisks.slice(0, 6).map(p => {
+        const packSize = p.products?.pack_size_litres || 1;
+        return {
+          label: p.products?.name || 'Unknown',
+          detail: `${(p.projected_quantity * packSize).toLocaleString()}L by ${new Date(p.projected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at ${p.warehouses?.name || 'warehouse'}`,
+          severity: p.projected_quantity <= 0 ? 'critical' : 'warning',
+        };
+      }),
       count: stockoutRisks.length,
     },
     {
@@ -35,11 +38,14 @@ export function PlanningReport({ projections, plannedActions }: PlanningReportPr
       icon: Package,
       color: 'text-warning',
       bg: 'bg-warning/10',
-      items: overstockRisks.slice(0, 4).map(p => ({
-        label: p.products?.name || 'Unknown',
-        detail: `${p.projected_quantity} units projected at ${p.warehouses?.name || 'warehouse'}`,
-        severity: 'info' as const,
-      })),
+      items: overstockRisks.slice(0, 4).map(p => {
+        const packSize = p.products?.pack_size_litres || 1;
+        return {
+          label: p.products?.name || 'Unknown',
+          detail: `${(p.projected_quantity * packSize).toLocaleString()}L projected at ${p.warehouses?.name || 'warehouse'}`,
+          severity: 'info' as const,
+        };
+      }),
       count: overstockRisks.length,
     },
     {

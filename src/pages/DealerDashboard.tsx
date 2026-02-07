@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAutoSeed } from '@/hooks/useAutoSeed';
 import { ShoppingCart, TrendingUp, AlertTriangle, Sparkles, Check, Package, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatPackagingShort } from '@/lib/packaging';
 
 export default function DealerDashboard() {
   const { user } = useAuth();
@@ -85,7 +86,7 @@ export default function DealerDashboard() {
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-card-foreground">{product?.name || rec.product_id}</p>
                     <p className="text-xs text-muted-foreground">
-                      Qty: <span className="font-bold text-card-foreground">{rec.quantity}</span> • {rec.reason}
+                      Qty: <span className="font-bold text-card-foreground">{formatPackagingShort(rec.quantity, product)}</span> • {rec.reason}
                     </p>
                     <div className="mt-1 flex items-center gap-2">
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${

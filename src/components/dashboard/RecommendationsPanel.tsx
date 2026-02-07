@@ -1,5 +1,6 @@
 import { Sparkles, Check, X, ArrowRight } from 'lucide-react';
 import type { Recommendation } from '@/lib/types';
+import { formatPackagingShort } from '@/lib/packaging';
 
 interface RecommendationsPanelProps {
   recommendations: Recommendation[];
@@ -73,7 +74,7 @@ export function RecommendationsPanel({ recommendations, onApprove, onReject, rea
                     </p>
                   )}
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    Qty: <span className="font-semibold text-card-foreground">{rec.quantity}</span> — {rec.reason}
+                    Qty: <span className="font-semibold text-card-foreground">{formatPackagingShort(rec.quantity, product)}</span> — {rec.reason}
                   </p>
                 </div>
                 {!readOnly && rec.status === 'pending' && (

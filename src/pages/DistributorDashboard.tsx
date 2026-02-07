@@ -36,7 +36,7 @@ export default function DistributorDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatsCard
           title="Warehouse Stock"
-          value={stats.totalUnits.toLocaleString()}
+          value={`${(stats.totalLitres / 1000).toFixed(1)}K L`}
           icon={<Warehouse className="h-4 w-4 text-muted-foreground" />}
         />
         <StatsCard

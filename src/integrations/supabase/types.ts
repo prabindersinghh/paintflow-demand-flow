@@ -496,6 +496,7 @@ export type Database = {
           id: string
           min_stock: number
           name: string
+          pack_size_litres: number
           sku: string
           unit_price: number
         }
@@ -506,6 +507,7 @@ export type Database = {
           id?: string
           min_stock?: number
           name: string
+          pack_size_litres?: number
           sku: string
           unit_price?: number
         }
@@ -516,6 +518,7 @@ export type Database = {
           id?: string
           min_stock?: number
           name?: string
+          pack_size_litres?: number
           sku?: string
           unit_price?: number
         }

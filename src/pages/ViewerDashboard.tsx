@@ -46,7 +46,7 @@ export default function ViewerDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-6">
-        <StatsCard title="Network Inventory" value={stats.totalUnits.toLocaleString()} icon={<Package className="h-4 w-4 text-muted-foreground" />} />
+        <StatsCard title="Network Inventory" value={`${(stats.totalLitres / 1000).toFixed(1)}K L`} icon={<Package className="h-4 w-4 text-muted-foreground" />} />
         <StatsCard title="Stockout Risk" value={`${stats.stockoutRiskScore}%`} icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />} variant={stats.stockoutRiskScore > 20 ? 'destructive' : 'default'} />
         <StatsCard title="Active Alerts" value={stats.activeAlerts} icon={<Target className="h-4 w-4 text-muted-foreground" />} />
         <StatsCard title="Active SKUs" value={stats.totalSKUs} icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />} />
