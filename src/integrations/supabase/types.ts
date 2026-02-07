@@ -141,6 +141,13 @@ export type Database = {
             foreignKeyName: "dealers_warehouse_id_fkey"
             columns: ["warehouse_id"]
             isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["warehouse__id"]
+          },
+          {
+            foreignKeyName: "dealers_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
             referencedRelation: "warehouses"
             referencedColumns: ["id"]
           },
@@ -175,6 +182,20 @@ export type Database = {
           region?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "forecasts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "forecasts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "planned_actions_view"
+            referencedColumns: ["product__id"]
+          },
           {
             foreignKeyName: "forecasts_product_id_fkey"
             columns: ["product_id"]
@@ -214,6 +235,20 @@ export type Database = {
             foreignKeyName: "historical_sales_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "historical_sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "planned_actions_view"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "historical_sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -246,8 +281,29 @@ export type Database = {
             foreignKeyName: "inventory_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "planned_actions_view"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["warehouse__id"]
           },
           {
             foreignKeyName: "inventory_warehouse_id_fkey"
@@ -297,8 +353,29 @@ export type Database = {
             foreignKeyName: "inventory_movements_destination_warehouse_id_fkey"
             columns: ["destination_warehouse_id"]
             isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["warehouse__id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_destination_warehouse_id_fkey"
+            columns: ["destination_warehouse_id"]
+            isOneToOne: false
             referencedRelation: "warehouses"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "planned_actions_view"
+            referencedColumns: ["product__id"]
           },
           {
             foreignKeyName: "inventory_movements_product_id_fkey"
@@ -313,6 +390,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "recommendations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_source_warehouse_id_fkey"
+            columns: ["source_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["warehouse__id"]
           },
           {
             foreignKeyName: "inventory_movements_source_warehouse_id_fkey"
@@ -368,8 +452,29 @@ export type Database = {
             foreignKeyName: "inventory_projection_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "inventory_projection_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "planned_actions_view"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "inventory_projection_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_projection_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["warehouse__id"]
           },
           {
             foreignKeyName: "inventory_projection_warehouse_id_fkey"
@@ -415,6 +520,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "dealers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "planned_actions_view"
+            referencedColumns: ["product__id"]
           },
           {
             foreignKeyName: "orders_product_id_fkey"
@@ -472,6 +591,20 @@ export type Database = {
           to_location?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "planned_actions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "planned_actions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "planned_actions_view"
+            referencedColumns: ["product__id"]
+          },
           {
             foreignKeyName: "planned_actions_product_id_fkey"
             columns: ["product_id"]
@@ -607,6 +740,20 @@ export type Database = {
             foreignKeyName: "recommendations_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "recommendations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "planned_actions_view"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "recommendations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -627,6 +774,72 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      virtual_inventory_movements: {
+        Row: {
+          created_at: string
+          from_warehouse: string | null
+          id: string
+          movement_type: string
+          quantity_l: number
+          simulated_date: string
+          sku_id: string
+          to_warehouse: string | null
+        }
+        Insert: {
+          created_at?: string
+          from_warehouse?: string | null
+          id?: string
+          movement_type: string
+          quantity_l?: number
+          simulated_date?: string
+          sku_id: string
+          to_warehouse?: string | null
+        }
+        Update: {
+          created_at?: string
+          from_warehouse?: string | null
+          id?: string
+          movement_type?: string
+          quantity_l?: number
+          simulated_date?: string
+          sku_id?: string
+          to_warehouse?: string | null
+        }
+        Relationships: []
+      }
+      virtual_inventory_projection: {
+        Row: {
+          current_stock_l: number
+          id: string
+          incoming_l: number
+          outgoing_l: number
+          projected_stock_l: number
+          simulation_run_at: string
+          sku_id: string
+          warehouse_id: string
+        }
+        Insert: {
+          current_stock_l?: number
+          id?: string
+          incoming_l?: number
+          outgoing_l?: number
+          projected_stock_l?: number
+          simulation_run_at?: string
+          sku_id: string
+          warehouse_id: string
+        }
+        Update: {
+          current_stock_l?: number
+          id?: string
+          incoming_l?: number
+          outgoing_l?: number
+          projected_stock_l?: number
+          simulation_run_at?: string
+          sku_id?: string
+          warehouse_id?: string
         }
         Relationships: []
       }
@@ -667,7 +880,126 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      forecast_projection_view: {
+        Row: {
+          confidence: number | null
+          created_at: string | null
+          current_stock_l: number | null
+          forecast_date: string | null
+          id: string | null
+          incoming_l: number | null
+          outgoing_l: number | null
+          predicted_demand: number | null
+          product_id: string | null
+          projected_stock_l: number | null
+          region: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecasts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "forecasts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "planned_actions_view"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "forecasts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_view_for_dashboard: {
+        Row: {
+          id: string | null
+          last_updated: string | null
+          product__category: string | null
+          product__color: string | null
+          product__id: string | null
+          product__min_stock: number | null
+          product__name: string | null
+          product__pack_size_litres: number | null
+          product__sku: string | null
+          product__unit_price: number | null
+          product_id: string | null
+          quantity: number | null
+          warehouse__id: string | null
+          warehouse__name: string | null
+          warehouse__region: string | null
+          warehouse_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "planned_actions_view"
+            referencedColumns: ["product__id"]
+          },
+          {
+            foreignKeyName: "inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_view_for_dashboard"
+            referencedColumns: ["warehouse__id"]
+          },
+          {
+            foreignKeyName: "inventory_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      planned_actions_view: {
+        Row: {
+          action_type: string | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          executed_at: string | null
+          from_location: string | null
+          id: string | null
+          planned_execution_date: string | null
+          product__category: string | null
+          product__id: string | null
+          product__min_stock: number | null
+          product__name: string | null
+          product__pack_size_litres: number | null
+          product__sku: string | null
+          product__unit_price: number | null
+          product_id: string | null
+          quantity: number | null
+          recommendation_id: string | null
+          status: string | null
+          to_location: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       execute_dealer_order: {
