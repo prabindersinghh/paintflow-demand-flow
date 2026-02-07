@@ -25,7 +25,6 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Assign role
     const { error: roleError } = await supabase.from('user_roles').upsert({
       user_id,
       role,
@@ -33,7 +32,6 @@ Deno.serve(async (req) => {
 
     if (roleError) throw roleError
 
-    // Upsert profile
     if (name) {
       await supabase.from('profiles').upsert({
         user_id,
@@ -41,7 +39,6 @@ Deno.serve(async (req) => {
       }, { onConflict: 'user_id' })
     }
 
-    // Log activity
     await supabase.from('activity_log').insert({
       user_name: name || 'New User',
       action: 'user_registered',
@@ -53,8 +50,9 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

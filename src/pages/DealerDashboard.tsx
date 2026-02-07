@@ -16,6 +16,7 @@ export default function DealerDashboard() {
 
   const handleOrder = async (recId: string) => {
     await placeDealerOrder(recId, user?.name);
+    // In planning mode, this approves the plan rather than executing immediately
   };
 
   if (loading) {
@@ -99,7 +100,7 @@ export default function DealerDashboard() {
                     className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm transition-all"
                   >
                     <ShoppingCart className="h-3.5 w-3.5" />
-                    Order Now
+                    Plan Order
                   </button>
                 </div>
               );

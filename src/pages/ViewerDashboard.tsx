@@ -7,13 +7,15 @@ import { RecommendationsPanel } from '@/components/dashboard/RecommendationsPane
 import { RegionalDemandMap } from '@/components/dashboard/RegionalDemandMap';
 import { SKUVelocityChart } from '@/components/dashboard/SKUVelocityChart';
 import { ActivityTimeline } from '@/components/dashboard/ActivityTimeline';
+import { PlanningReport } from '@/components/dashboard/PlanningReport';
+import { ProjectedInventoryChart } from '@/components/dashboard/ProjectedInventoryChart';
 import { useRealData } from '@/hooks/useRealData';
 import { Eye, Package, AlertTriangle, Target, TrendingUp, Sparkles, RefreshCw } from 'lucide-react';
 
 export default function ViewerDashboard() {
   const {
-    inventory, alerts, recommendations, historicalSales, regionalDemand, skuVelocity, stats,
-    activityLog, loading,
+    products, inventory, alerts, recommendations, historicalSales, regionalDemand, skuVelocity, stats,
+    activityLog, plannedActions, projections, loading,
   } = useRealData();
 
   if (loading) {
@@ -49,15 +51,21 @@ export default function ViewerDashboard() {
         <StatsCard title="Executed" value={recommendations.filter(r => r.status === 'executed').length} icon={<Sparkles className="h-4 w-4 text-muted-foreground" />} />
       </div>
 
+      {/* Projected Inventory */}
+      <div className="mb-6">
+        <ProjectedInventoryChart inventory={inventory} projections={projections} products={products} />
+      </div>
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <DemandChart data={historicalSales} />
         <RegionalDemandMap data={regionalDemand} />
       </div>
 
-      {/* Recommendations + Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      {/* Planning Report + Recommendations + Alerts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <RecommendationsPanel recommendations={recommendations} readOnly />
+        <PlanningReport projections={projections} plannedActions={plannedActions} />
         <AlertsPanel alerts={alerts} />
       </div>
 

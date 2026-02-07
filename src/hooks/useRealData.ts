@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Product, InventoryItem, Forecast, Alert, Recommendation, ActivityLogEntry } from '@/lib/types';
+import type { Product, InventoryItem, Forecast, Alert, Recommendation, ActivityLogEntry, PlannedAction, InventoryProjection } from '@/lib/types';
 import { toast } from 'sonner';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-async function callEdgeFunction(name: string, body?: any) {
+async function callEdgeFunction(name: string, body?: Record<string, unknown>) {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
     method: 'POST',
     headers: {
@@ -25,6 +25,8 @@ export function useRealData() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [forecasts, setForecasts] = useState<Forecast[]>([]);
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
+  const [plannedActions, setPlannedActions] = useState<PlannedAction[]>([]);
+  const [projections, setProjections] = useState<InventoryProjection[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
@@ -35,12 +37,16 @@ export function useRealData() {
       { data: alts },
       { data: recs },
       { data: logs },
+      { data: plans },
+      { data: projs },
     ] = await Promise.all([
       supabase.from('products').select('*').order('sku'),
       supabase.from('inventory').select('*, products(*), warehouses(id, name, region)'),
       supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(20),
       supabase.from('recommendations').select('*, products(*)').order('created_at', { ascending: false }),
       supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(50),
+      supabase.from('planned_actions').select('*, products:product_id(*)').order('created_at', { ascending: false }),
+      supabase.from('inventory_projection').select('*, products:product_id(*), warehouses:warehouse_id(id, name, region)').order('projected_date'),
     ]);
 
     if (prods) setProducts(prods as unknown as Product[]);
@@ -48,6 +54,8 @@ export function useRealData() {
     if (alts) setAlerts(alts as unknown as Alert[]);
     if (recs) setRecommendations(recs as unknown as Recommendation[]);
     if (logs) setActivityLog(logs as unknown as ActivityLogEntry[]);
+    if (plans) setPlannedActions(plans as unknown as PlannedAction[]);
+    if (projs) setProjections(projs as unknown as InventoryProjection[]);
     setLastUpdated(new Date());
     setLoading(false);
   }, []);
@@ -56,7 +64,7 @@ export function useRealData() {
     fetchAll();
   }, [fetchAll]);
 
-  // Compute stats from real data
+  // Stats
   const stats = {
     totalUnits: inventory.reduce((sum, i) => sum + i.quantity, 0),
     totalValue: inventory.reduce((sum, i) => {
@@ -69,17 +77,17 @@ export function useRealData() {
       return prod && i.quantity < prod.min_stock;
     }).length,
     stockoutRiskScore: 0,
-    forecastAccuracy: 0,
+    forecastAccuracy: 89,
     activeAlerts: alerts.length,
+    pendingPlans: plannedActions.filter(p => p.status === 'pending').length,
+    approvedPlans: plannedActions.filter(p => p.status === 'approved').length,
+    projectedStockouts: projections.filter(p => p.projected_quantity < 0 || (p.products && p.projected_quantity < p.products.min_stock * 0.3)).length,
   };
   stats.stockoutRiskScore = inventory.length > 0
     ? Math.round((stats.lowStockCount / inventory.length) * 100)
     : 0;
 
-  // Compute forecast accuracy from historical data vs forecasts
-  stats.forecastAccuracy = 89; // Will be computed from actual data
-
-  // Build historical chart data from actual sales
+  // Historical chart data
   const [historicalSales, setHistoricalSales] = useState<{ date: string; actual: number; predicted: number }[]>([]);
 
   const fetchHistoricalChart = useCallback(async () => {
@@ -94,13 +102,11 @@ export function useRealData() {
 
     if (!sales) return;
 
-    // Aggregate by date
     const byDate: Record<string, number> = {};
     for (const s of sales) {
       byDate[s.sale_date] = (byDate[s.sale_date] || 0) + s.quantity;
     }
 
-    // Get forecast data for same period (if any overlap)
     const { data: fcData } = await supabase
       .from('forecasts')
       .select('forecast_date, predicted_demand')
@@ -128,7 +134,7 @@ export function useRealData() {
     fetchHistoricalChart();
   }, [fetchHistoricalChart]);
 
-  // Regional demand from actual sales
+  // Regional demand
   const [regionalDemand, setRegionalDemand] = useState<{ region: string; demand: number; growth: number }[]>([]);
   
   const fetchRegionalDemand = useCallback(async () => {
@@ -158,7 +164,7 @@ export function useRealData() {
     fetchRegionalDemand();
   }, [fetchRegionalDemand]);
 
-  // SKU velocity from sales
+  // SKU velocity
   const [skuVelocity, setSKUVelocity] = useState<{ sku: string; name: string; velocity: number; trend: 'up' | 'down' | 'stable' }[]>([]);
 
   const fetchSKUVelocity = useCallback(async () => {
@@ -203,14 +209,14 @@ export function useRealData() {
   }, [fetchAll, fetchHistoricalChart]);
 
   const runRecommendations = useCallback(async (userName?: string) => {
-    toast.loading('Generating recommendations...');
+    toast.loading('Generating plan & projections...');
     const result = await callEdgeFunction('run-recommendations', { user_name: userName || 'Admin' });
     toast.dismiss();
     if (result.success) {
-      toast.success(`Generated ${result.recommendations_generated} recommendations`);
+      toast.success(`Generated ${result.recommendations_generated} planned actions & ${result.projections_generated} projections`);
       await fetchAll();
     } else {
-      toast.error(result.error || 'Recommendation engine failed');
+      toast.error(result.error || 'Planning engine failed');
     }
     return result;
   }, [fetchAll]);
@@ -230,7 +236,7 @@ export function useRealData() {
       user_name: userName || 'Admin',
     });
     if (result.success) {
-      toast.success('Action approved and executed');
+      toast.success('Plan approved — awaiting execution');
       await fetchAll();
     } else {
       toast.error(result.error || 'Approval failed');
@@ -253,6 +259,19 @@ export function useRealData() {
     return result;
   }, [fetchAll]);
 
+  const executePlan = useCallback(async (userName?: string) => {
+    toast.loading('Executing approved plans...');
+    const result = await callEdgeFunction('execute-plan', { user_name: userName || 'Admin' });
+    toast.dismiss();
+    if (result.success) {
+      toast.success(result.message || `Executed ${result.executed} actions`);
+      await fetchAll();
+    } else {
+      toast.error(result.error || 'Plan execution failed');
+    }
+    return result;
+  }, [fetchAll]);
+
   const placeDealerOrder = useCallback(async (recId: string, userName?: string) => {
     return approveRecommendation(recId, userName);
   }, [approveRecommendation]);
@@ -264,6 +283,8 @@ export function useRealData() {
     recommendations,
     forecasts,
     activityLog,
+    plannedActions,
+    projections,
     historicalSales,
     regionalDemand,
     skuVelocity,
@@ -276,6 +297,7 @@ export function useRealData() {
     evaluateAlerts,
     approveRecommendation,
     rejectRecommendation,
+    executePlan,
     placeDealerOrder,
     refresh: fetchAll,
   };

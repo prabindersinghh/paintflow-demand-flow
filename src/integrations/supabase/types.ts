@@ -323,6 +323,63 @@ export type Database = {
           },
         ]
       }
+      inventory_projection: {
+        Row: {
+          based_on_plan: boolean
+          created_at: string
+          current_quantity: number
+          forecasted_demand: number
+          id: string
+          planned_inbound: number
+          planned_outbound: number
+          product_id: string
+          projected_date: string
+          projected_quantity: number
+          warehouse_id: string
+        }
+        Insert: {
+          based_on_plan?: boolean
+          created_at?: string
+          current_quantity?: number
+          forecasted_demand?: number
+          id?: string
+          planned_inbound?: number
+          planned_outbound?: number
+          product_id: string
+          projected_date: string
+          projected_quantity?: number
+          warehouse_id: string
+        }
+        Update: {
+          based_on_plan?: boolean
+          created_at?: string
+          current_quantity?: number
+          forecasted_demand?: number
+          id?: string
+          planned_inbound?: number
+          planned_outbound?: number
+          product_id?: string
+          projected_date?: string
+          projected_quantity?: number
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_projection_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_projection_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           created_at: string
@@ -364,6 +421,69 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      planned_actions: {
+        Row: {
+          action_type: string
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          executed_at: string | null
+          from_location: string | null
+          id: string
+          planned_execution_date: string | null
+          product_id: string | null
+          quantity: number
+          recommendation_id: string | null
+          status: string
+          to_location: string
+        }
+        Insert: {
+          action_type: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          executed_at?: string | null
+          from_location?: string | null
+          id?: string
+          planned_execution_date?: string | null
+          product_id?: string | null
+          quantity: number
+          recommendation_id?: string | null
+          status?: string
+          to_location: string
+        }
+        Update: {
+          action_type?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          executed_at?: string | null
+          from_location?: string | null
+          id?: string
+          planned_execution_date?: string | null
+          product_id?: string | null
+          quantity?: number
+          recommendation_id?: string | null
+          status?: string
+          to_location?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planned_actions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_actions_recommendation_id_fkey"
+            columns: ["recommendation_id"]
+            isOneToOne: false
+            referencedRelation: "recommendations"
             referencedColumns: ["id"]
           },
         ]

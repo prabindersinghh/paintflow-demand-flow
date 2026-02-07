@@ -35,7 +35,7 @@ export function InventoryTable({ inventory, warehouseFilter, compact }: Inventor
     <div className="rounded-lg border border-border bg-card">
       <div className="border-b border-border px-5 py-3">
         <h3 className="text-sm font-semibold text-card-foreground">
-          Inventory Status {compact && <span className="text-muted-foreground font-normal">• Top 10 at risk</span>}
+          Current Inventory {compact && <span className="text-muted-foreground font-normal">• Top 10 at risk</span>}
         </h3>
       </div>
       <div className="overflow-x-auto">
