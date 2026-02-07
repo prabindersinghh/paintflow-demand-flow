@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           created_at: string
@@ -151,6 +184,41 @@ export type Database = {
           },
         ]
       }
+      historical_sales: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+          region: string
+          sale_date: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+          region: string
+          sale_date: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+          region?: string
+          sale_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historical_sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory: {
         Row: {
           id: string
@@ -184,6 +252,71 @@ export type Database = {
           {
             foreignKeyName: "inventory_warehouse_id_fkey"
             columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_movements: {
+        Row: {
+          created_at: string
+          destination_warehouse_id: string | null
+          id: string
+          movement_type: string
+          product_id: string
+          quantity: number
+          recommendation_id: string | null
+          source_warehouse_id: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          destination_warehouse_id?: string | null
+          id?: string
+          movement_type: string
+          product_id: string
+          quantity: number
+          recommendation_id?: string | null
+          source_warehouse_id?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          destination_warehouse_id?: string | null
+          id?: string
+          movement_type?: string
+          product_id?: string
+          quantity?: number
+          recommendation_id?: string | null
+          source_warehouse_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_destination_warehouse_id_fkey"
+            columns: ["destination_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_recommendation_id_fkey"
+            columns: ["recommendation_id"]
+            isOneToOne: false
+            referencedRelation: "recommendations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_source_warehouse_id_fkey"
+            columns: ["source_warehouse_id"]
             isOneToOne: false
             referencedRelation: "warehouses"
             referencedColumns: ["id"]
@@ -307,6 +440,7 @@ export type Database = {
         Row: {
           ai_confidence: number | null
           created_at: string
+          executed_at: string | null
           from_location: string | null
           id: string
           priority: string
@@ -320,6 +454,7 @@ export type Database = {
         Insert: {
           ai_confidence?: number | null
           created_at?: string
+          executed_at?: string | null
           from_location?: string | null
           id?: string
           priority?: string
@@ -333,6 +468,7 @@ export type Database = {
         Update: {
           ai_confidence?: number | null
           created_at?: string
+          executed_at?: string | null
           from_location?: string | null
           id?: string
           priority?: string
@@ -411,6 +547,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      execute_dealer_order: {
+        Args: {
+          p_dealer_id: string
+          p_product_id: string
+          p_quantity: number
+          p_recommendation_id?: string
+          p_user_name?: string
+          p_warehouse_id: string
+        }
+        Returns: Json
+      }
+      execute_transfer: {
+        Args: {
+          p_dest_warehouse_id: string
+          p_product_id: string
+          p_quantity: number
+          p_recommendation_id: string
+          p_source_warehouse_id: string
+          p_user_name?: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
